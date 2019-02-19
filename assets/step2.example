@@ -1,38 +1,26 @@
+import React, { Component } from 'react';
+import logo from './logo.svg';
+import './App.css';
 import { createStore, combineReducers } from 'redux';
-
+import { Provider } from 'react-redux';
 import SdkMap from '@boundlessgeo/sdk/components/map';
+import SdkZoomControl from '@boundlessgeo/sdk/components/map/zoom-control';
+import SdkZoomSlider from '@boundlessgeo/sdk/components/map/zoom-slider';
 import SdkMapReducer from '@boundlessgeo/sdk/reducers/map';
 import * as SdkMapActions from '@boundlessgeo/sdk/actions/map';
 
-import SdkLayerList from '@boundlessgeo/sdk/components/layer-list';
-import SdkLayerListItem from '@boundlessgeo/sdk/components/layer-list-item';
-
-import {Provider} from 'react-redux';
-
-import {DragSource, DropTarget} from 'react-dnd';
+import '@boundlessgeo/sdk/stylesheet/sdk.scss';
 
 const store = createStore(combineReducers({
   'map': SdkMapReducer,
-}));
-
-class LayerListItem extends SdkLayerListItem {
-  render() {
-    const layer = this.props.layer;
-    const checkbox = this.getVisibilityControl(layer);
-	
-    return  this.props.connectDragSource(this.props.connectDropTarget((
-      <li className="layer">
-        <span className="checkbox">{checkbox}</span>
-        <span className="name">{layer.id}</span>
-      </li>
-    )));
-  }
-}
-
-LayerListItem = DropTarget(types, layerListItemTarget, collectDrop)(DragSource(types, layerListItemSource, collect)(LayerListItem));
+}), window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__());
 
 class App extends Component {
-	componentDidMount() {
+
+  componentDidMount() {
+    // start in the middle of america
+    store.dispatch(SdkMapActions.setView([12, 40], 4));
+
 	  // add the OSM source
 	  store.dispatch(SdkMapActions.addSource('osm', {
 		type: 'raster',
@@ -51,14 +39,34 @@ class App extends Component {
 	  }));
 	}
 
-	render(){
-		return 
-		<div>
-			<SdkMap store={store} />
-
-			<Provider store={store}>
-			  <SdkLayerList layerClass={LayerListItem} />
-			</Provider>
-		</div>
-	}
+  render() {
+    return (
+      <div className="App">
+        <header className="App-header">
+          <img src={logo} className="App-logo" alt="logo" />
+          <p>
+            Edit <code>src/App.js</code> and save to reload.
+          </p>
+          <a
+            className="App-link"
+            href="https://reactjs.org"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Learn React
+          </a>
+        </header>
+        <div>
+			    <Provider store={store}>
+            <SdkMap>
+              <SdkZoomControl style={{position: 'absolute', top: 10, left: 14}} />
+              <SdkZoomSlider />
+            </SdkMap>
+          </Provider>
+		    </div>
+      </div>
+    );
+  }
 }
+
+export default App;
